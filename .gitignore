@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# Datasets, training runs and weights
+datasets/
+runs/
+tiago_single_class_yolo26/
+*.pt
+*.onnx
+
+# Debug snapshots from the vision node
+debug/
