@@ -5,9 +5,9 @@ __pycache__/
 # Datasets, training runs and weights
 datasets/
 runs/
-tiago_single_class_yolo26/
 *.pt
 *.onnx
+!tiago_single_class_yolo26/weights/best.pt
 
 # Debug snapshots from the vision node
 debug/

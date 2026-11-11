@@ -92,6 +92,8 @@ Grasp detector: subscribes to `/diagnostics` and `/joint_states`, publishes `/gr
 │   ├── run_rl_start.py               # moves arms, gripper, head and torso to the start pose used in training
 │   ├── spawn_scene.py                # spawns a table and a cube in front of the robot in Gazebo
 │   └── rviz_setup.rviz               # RViz configuration for the topics above
+├── tiago_single_class_yolo26/
+│   └── weights/best.pt               # trained YOLO26n detector
 ├── utils/
 │   ├── collect_dataset.py            # generates labelled detector images in Gazebo
 │   ├── train_yolo.py                 # fine-tunes YOLO26n with extra blur and lighting augmentation
@@ -108,7 +110,7 @@ Grasp detector: subscribes to `/diagnostics` and `/joint_states`, publishes `/gr
 - Python 3.10 with `ultralytics` (a release that includes YOLO26), `torch`, `opencv-python` and `numpy`
 - For simulation: Gazebo Classic with `gazebo_ros`, and the TIAGo Pro simulation from [`pal-robotics/tiago_pro_simulation`](https://github.com/pal-robotics/tiago_pro_simulation)
 
-The trained detector weights are not included in this repository. Train them with the scripts in [Training the detector](#training-the-detector).
+The trained detector is included as [`tiago_single_class_yolo26/weights/best.pt`](tiago_single_class_yolo26/weights/best.pt), which is the vision node's default model path. To train your own, see [Training the detector](#training-the-detector).
 
 ## Usage
 
@@ -120,7 +122,7 @@ All commands are run from the repository root in a sourced ROS 2 environment.
 ros2 launch tiago_pro_gazebo tiago_pro_gazebo.launch.py
 python3 src/run_rl_start.py    # start pose: head tilted 45° down, right gripper open
 python3 src/spawn_scene.py     # table and red cube in front of the robot
-python3 src/yolo_depth_pose_hsv.py --yolo_model /path/to/best.pt --depth_gazebo
+python3 src/yolo_depth_pose_hsv.py --depth_gazebo
 rviz2 -d src/rviz_setup.rviz
 ```
 
@@ -131,7 +133,7 @@ Gripper–object contact in Gazebo is unreliable, so the simulation is useful fo
 ```bash
 python3 src/run_rl_start.py
 python3 src/grasped_current_publisher.py
-python3 src/yolo_depth_pose_hsv.py --yolo_model /path/to/best.pt \
+python3 src/yolo_depth_pose_hsv.py \
   --pose_offset 0.0 0.0 0.0 \
   --goal_position 0.72 -0.716 0.60
 ```
@@ -161,6 +163,14 @@ python3 src/yolo_depth_pose_hsv.py --yolo_model /path/to/best.pt \
 2. **Assemble the dataset.** Put the final single-class dataset in `datasets/dataset_merged/` with a `dataset.yaml`. The dataset used in the thesis combined the Gazebo images with three public collections of cubes and graspable objects, for 4,552 training and 888 validation images.
 3. **Train.** `python3 utils/train_yolo.py` fine-tunes the COCO-pretrained `yolo26n.pt` and writes the results to `runs/detect/tiago_single_class_yolo26/`. On top of the Ultralytics augmentations (HSV jitter, rotation, scaling, translation, perspective, flips, mosaic, AugMix), a custom trainer applies Gaussian blur on the GPU to mimic head vibration, plus gamma and brightness/contrast jitter.
 4. **Check.** `python3 utils/test_yolo_image.py --model runs/detect/tiago_single_class_yolo26/weights/best.pt --image frame.png --output result.jpg`
+
+Validation metrics of the included detector, as reported in the thesis:
+
+| Model | Precision | Recall | mAP<sub>50</sub> | mAP<sub>50-95</sub> |
+| --- | :---: | :---: | :---: | :---: |
+| YOLO26n | 98.48% | 98.46% | 99.37% | 82.24% |
+
+mAP<sub>50-95</sub> is lower because it averages over stricter IoU thresholds, up to 0.95, where small offsets of the box edges already count as misses.
 
 ## Citation
 
