@@ -14,11 +14,13 @@ The policy was trained only in simulation and deployed on the real robot without
 
 ## Demo
 
-| Robot point of view (RViz) | External point of view |
-| :---: | :---: |
-| [<img src="media/deployment_rviz.jpg" width="420">](media/deployment_rviz.mp4) | [<img src="media/deployment_external.jpg" width="315">](media/deployment_external.mp4) |
+<p align="center">
+  <img src="media/deployment.gif" alt="Pick-and-place on the real TIAGo Pro, RViz view and external camera side by side">
+</p>
 
-Click a thumbnail to play the video; the two clips are synchronized. In RViz, the green dot is the detected object, the orange dot means the object is grasped and the red dot is the release point.
+A run on the real robot at 4× speed. Left: the robot's view in RViz, with the head-camera image and the 3D scene. Right: an external camera. In RViz, the green dot is the detected object, the orange dot means the object is grasped and the red dot is the release point.
+
+Full-length videos at real speed (MP4 download): [RViz view](media/deployment_rviz.mp4?raw=true), [external view](media/deployment_external.mp4?raw=true).
 
 ## Where the code lives
 
@@ -139,23 +141,6 @@ python3 src/yolo_depth_pose_hsv.py \
 ```
 
 `--pose_offset` adds a constant correction to the estimated position, which is useful to compensate for arm calibration errors. The pick-and-place policies were trained with goal positions around (0.72, -0.716, 0.60) m in `base_footprint`.
-
-### Vision node options
-
-| Option | Default | Description |
-| --- | --- | --- |
-| `--yolo_model` | `tiago_single_class_yolo26/weights/best.pt` | Detector weights |
-| `--yolo_conf` | `0.45` | Minimum detection confidence |
-| `--parent_frame` | `base_footprint` | Frame of the published pose |
-| `--depth_topic` | `/head_front_camera/aligned_depth_to_color/image_raw` | Aligned depth topic |
-| `--depth_gazebo` | off | Use the Gazebo depth topic `/head_front_camera/depth/image_rect_raw` |
-| `--hsv_thresh H S V` | `100 100 80` | Colour tolerances for the segmentation |
-| `--max_depth` | `2.5` | Maximum valid depth (m) |
-| `--pose_offset X Y Z` | `0 0 0` | Constant offset added to the position (m) |
-| `--goal_position X Y Z` | `0.72 -0.716 0.60` | Release point published on `/goal_position` (m) |
-| `--yaw DEG` | none | Publish a fixed yaw instead of the estimated one |
-| `--debug_save_dir DIR` | none | Save one set of debug images: annotated frame, crop, colour mask, depth inliers, rectangle fit |
-| `--no_show_obb` | | Do not draw the fitted rectangle on the annotated image |
 
 ## Training the detector
 
